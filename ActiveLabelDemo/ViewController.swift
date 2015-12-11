@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        label.text = "This is a post with #multiple #hashtags and a @userhandle. Links are also supported like this one: http://optonaut.co."
+        label.text = "This is a post with #multiple #hashtags and a @userhandle. Links are also supported like this one: http://optonaut.co. 方案ID：#<schemeId>123</schemeId>fsadfs"
         label.numberOfLines = 0
         label.lineSpacing = 4
         
@@ -24,10 +24,16 @@ class ViewController: UIViewController {
         label.hashtagColor = UIColor(red: 85.0/255, green: 172.0/255, blue: 238.0/255, alpha: 1)
         label.mentionColor = UIColor(red: 238.0/255, green: 85.0/255, blue: 96.0/255, alpha: 1)
         label.URLColor = UIColor(red: 85.0/255, green: 238.0/255, blue: 151.0/255, alpha: 1)
+        label.regexColor = { _ in UIColor(red: 85.0/255, green: 172.0/255, blue: 238.0/255, alpha: 1) }
         
         label.handleMentionTap { self.alert("Mention", message: $0) }
         label.handleHashtagTap { self.alert("Hashtag", message: $0) }
         label.handleURLTap { self.alert("URL", message: $0.description) }
+        label.regex = try! NSRegularExpression(pattern: "<([a-z0-9_]+)>([a-z0-9_]+)</\\1>", options: [.CaseInsensitive])
+        label.handleRegexReplace { $0[2] }
+        label.handleRegexTap {
+            self.alert("Regex", message: $0.joinWithSeparator(","))
+        }
         
         label.frame = CGRect(x: 20, y: 40, width: view.frame.width - 40, height: 300)
         view.addSubview(label)
