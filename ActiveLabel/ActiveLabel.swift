@@ -11,6 +11,12 @@ import UIKit
 
 public protocol ActiveLabelDelegate: class {
     func didSelectText(text: String, type: ActiveType)
+    func didSelectRegexText(values: [String])
+}
+
+extension ActiveLabelDelegate {
+    func didSelectRegexText(values: [String]) {
+    }
 }
 
 @IBDesignable public class ActiveLabel: UILabel {
@@ -63,6 +69,23 @@ public protocol ActiveLabelDelegate: class {
             updateTextStorage()
         }
     }
+    public var regexColor: [String] -> UIColor = { _ in
+        return .blueColor()
+    } {
+        didSet {
+            updateTextStorage()
+        }
+    }
+    public var regexSelectedColor: ([String] -> UIColor?)? {
+        didSet {
+            updateTextStorage()
+        }
+    }
+    public var regex: NSRegularExpression? {
+        didSet {
+            updateTextStorage()
+        }
+    }
     @IBInspectable public var lineSpacing: Float? {
         didSet {
             updateTextStorage()
@@ -80,6 +103,14 @@ public protocol ActiveLabelDelegate: class {
     
     public func handleURLTap(handler: (NSURL) -> ()) {
         urlTapHandler = handler
+    }
+    
+    public func handleRegexTap(handler: ([String]) -> ()) {
+        regexTapHandler = handler
+    }
+    
+    public func handleRegexReplace(handler: [String] -> String?) {
+        regexReplaceHandler = handler
     }
     
     // MARK: - override UILabel properties
@@ -164,6 +195,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(let userHandle): didTapMention(userHandle)
             case .Hashtag(let hashtag): didTapHashtag(hashtag)
             case .URL(let url): didTapStringURL(url)
+            case .Regex(let values): didTapRegex(values)
             case .None: ()
             }
             
@@ -183,6 +215,12 @@ public protocol ActiveLabelDelegate: class {
     private var mentionTapHandler: ((String) -> ())?
     private var hashtagTapHandler: ((String) -> ())?
     private var urlTapHandler: ((NSURL) -> ())?
+    private var regexTapHandler: (([String]) -> ())?
+    private var regexReplaceHandler: ([String] -> String?)? {
+        didSet {
+            updateTextStorage()
+        }
+    }
     
     private var selectedElement: (range: NSRange, element: ActiveElement)?
     private lazy var textStorage = NSTextStorage()
@@ -192,6 +230,7 @@ public protocol ActiveLabelDelegate: class {
         .Mention: [],
         .Hashtag: [],
         .URL: [],
+        .Regex: [],
     ]
     
     // MARK: - helper functions
@@ -238,22 +277,33 @@ public protocol ActiveLabelDelegate: class {
         
         for (type, elements) in activeElements {
             
+            var isRegex = false
             switch type {
             case .Mention: attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag: attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL: attributes[NSForegroundColorAttributeName] = URLColor
+            case .Regex: isRegex = true
             case .None: ()
             }
             
             for element in elements {
+                if isRegex {
+                    if case .Regex(let values) = element.element {
+                        attributes[NSForegroundColorAttributeName] = regexColor(values)
+                    }
+                }
                 mutAttrString.setAttributes(attributes, range: element.range)
             }
         }
     }
     
     /// use regex check all link ranges
-    private func parseTextAndExtractActiveElements(attrString: NSAttributedString) {
-        let textString = attrString.string as NSString
+    private func parseTextAndExtractActiveElements(mutAttrString: NSMutableAttributedString) {
+        if let regex = regex, elements = reduceToRegex(mutAttrString, regex: regex, replaceHandler: regexReplaceHandler) {
+            activeElements[.Regex]?.appendContentsOf(elements.map({ ($0.range, .Regex($0.values)) }))
+        }
+        
+        let textString = mutAttrString.string as NSString
         let textLength = textString.length
         var searchRange = NSMakeRange(0, textLength)
         
@@ -312,6 +362,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLColor
+            case .Regex(let values): attributes[NSForegroundColorAttributeName] = regexColor(values)
             case .None: ()
             }
         } else {
@@ -319,6 +370,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionSelectedColor ?? mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagSelectedColor ?? hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLSelectedColor ?? URLColor
+            case .Regex(let values): attributes[NSForegroundColorAttributeName] = regexSelectedColor?(values) ?? regexColor(values)
             case .None: ()
             }
         }
@@ -392,6 +444,14 @@ public protocol ActiveLabelDelegate: class {
             return
         }
         urlHandler(url)
+    }
+    
+    private func didTapRegex(values: [String]) {
+        guard let handler = regexTapHandler else {
+            delegate?.didSelectRegexText(values)
+            return
+        }
+        handler(values)
     }
 }
 

@@ -12,6 +12,7 @@ enum ActiveElement {
     case Mention(String)
     case Hashtag(String)
     case URL(String)
+    case Regex([String])
     case None
 }
 
@@ -19,6 +20,7 @@ public enum ActiveType {
     case Mention
     case Hashtag
     case URL
+    case Regex
     case None
 }
 
@@ -67,4 +69,33 @@ private func reduceRightToAllowed(str: String) -> String? {
         }
     }
     return nil
+}
+
+func reduceToRegex(mutAttrString: NSMutableAttributedString, regex: NSRegularExpression, replaceHandler: ([String] -> String?)? = nil) -> [(range: NSRange, values: [String])]? {
+    if mutAttrString.string.isEmpty {
+        return nil
+    }
+    
+    var elements = [(range: NSRange, values: [String])]()
+    var location = 0
+    while let result = regex.firstMatchInString(mutAttrString.string, options: [], range: NSRange(location: location, length: mutAttrString.length - location)) {
+        var values = [String]()
+        for i in 0..<result.numberOfRanges {
+            let value = (mutAttrString.string as NSString).substringWithRange(result.rangeAtIndex(i))
+            values.append(value)
+        }
+        
+        let elementRange: NSRange
+        if let content = replaceHandler?(values) {
+            mutAttrString.replaceCharactersInRange(result.range, withString: content)
+            elementRange = NSRange(location: result.range.location, length: (content as NSString).length)
+        } else {
+            elementRange = result.range
+        }
+        elements.append((range: elementRange, values: values))
+        
+        location = elementRange.location + elementRange.length
+    }
+    
+    return elements
 }
