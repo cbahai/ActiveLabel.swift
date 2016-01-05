@@ -69,6 +69,13 @@ extension ActiveLabelDelegate {
             updateTextStorage()
         }
     }
+    public var regexAttributes: [String] -> [String : AnyObject]? = { _ in
+        return nil
+    } {
+        didSet {
+            updateTextStorage()
+        }
+    }
     public var regexColor: [String] -> UIColor = { _ in
         return .blueColor()
     } {
@@ -290,6 +297,11 @@ extension ActiveLabelDelegate {
                 if isRegex {
                     if case .Regex(let values) = element.element {
                         attributes[NSForegroundColorAttributeName] = regexColor(values)
+                        if let attrs = regexAttributes(values) where !attrs.isEmpty {
+                            for (k, v) in attrs {
+                                attributes[k] = v
+                            }
+                        }
                     }
                 }
                 mutAttrString.setAttributes(attributes, range: element.range)
@@ -362,7 +374,13 @@ extension ActiveLabelDelegate {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLColor
-            case .Regex(let values): attributes[NSForegroundColorAttributeName] = regexColor(values)
+            case .Regex(let values):
+                attributes[NSForegroundColorAttributeName] = regexColor(values)
+                if let attrs = regexAttributes(values) where !attrs.isEmpty {
+                    for (k, v) in attrs {
+                        attributes[k] = v
+                    }
+                }
             case .None: ()
             }
         } else {
@@ -370,7 +388,13 @@ extension ActiveLabelDelegate {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionSelectedColor ?? mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagSelectedColor ?? hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLSelectedColor ?? URLColor
-            case .Regex(let values): attributes[NSForegroundColorAttributeName] = regexSelectedColor?(values) ?? regexColor(values)
+            case .Regex(let values):
+                attributes[NSForegroundColorAttributeName] = regexSelectedColor?(values) ?? regexColor(values)
+                if let attrs = regexAttributes(values) where !attrs.isEmpty {
+                    for (k, v) in attrs {
+                        attributes[k] = v
+                    }
+                }
             case .None: ()
             }
         }
