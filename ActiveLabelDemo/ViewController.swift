@@ -25,6 +25,9 @@ class ViewController: UIViewController {
         label.mentionColor = UIColor(red: 238.0/255, green: 85.0/255, blue: 96.0/255, alpha: 1)
         label.URLColor = UIColor(red: 85.0/255, green: 238.0/255, blue: 151.0/255, alpha: 1)
         label.regexColor = { _ in UIColor(red: 85.0/255, green: 172.0/255, blue: 238.0/255, alpha: 1) }
+        label.regexAttributes = { _ in
+            return [NSFontAttributeName: UIFont.systemFontOfSize(40)]
+        }
         
         label.handleMentionTap { self.alert("Mention", message: $0) }
         label.handleHashtagTap { self.alert("Hashtag", message: $0) }
