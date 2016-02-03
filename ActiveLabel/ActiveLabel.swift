@@ -267,6 +267,7 @@ extension ActiveLabelDelegate {
         addLinkAttribute(mutAttrString)
         
         textStorage.setAttributedString(mutAttrString)
+        super.attributedText = mutAttrString
         
         setNeedsDisplay()
     }
