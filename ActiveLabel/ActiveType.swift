@@ -9,60 +9,60 @@
 import Foundation
 
 enum ActiveElement {
-    case Mention(String)
-    case Hashtag(String)
-    case URL(String)
-    case Regex([String])
-    case None
+    case mention(String)
+    case hashtag(String)
+    case url(String)
+    case regex([String])
+    case none
 }
 
 public enum ActiveType {
-    case Mention
-    case Hashtag
-    case URL
-    case Regex
-    case None
+    case mention
+    case hashtag
+    case url
+    case regex
+    case none
 }
 
-func activeElement(word: String) -> ActiveElement {
+func activeElement(_ word: String) -> ActiveElement {
     if let url = reduceRightToURL(word) {
-        return .URL(url)
+        return .url(url)
     }
     
     if word.characters.count < 2 {
-        return .None
+        return .none
     }
     
     // remove # or @ sign and reduce to alpha numeric string (also allowed: _)
-    guard let allowedWord = reduceRightToAllowed(word.substringFromIndex(word.startIndex.advancedBy(1))) else {
-        return .None
+    guard let allowedWord = reduceRightToAllowed(word.substring(from: word.characters.index(word.startIndex, offsetBy: 1))) else {
+        return .none
     }
     
     if word.hasPrefix("@") {
-        return .Mention(allowedWord)
+        return .mention(allowedWord)
     } else if word.hasPrefix("#") {
-        return .Hashtag(allowedWord)
+        return .hashtag(allowedWord)
     } else {
-        return .None
+        return .none
     }
 }
 
-private func reduceRightToURL(str: String) -> String? {
-    if let urlDetector = try? NSDataDetector(types: NSTextCheckingType.Link.rawValue) {
+private func reduceRightToURL(_ str: String) -> String? {
+    if let urlDetector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) {
         let nsStr = str as NSString
-        let results = urlDetector.matchesInString(str, options: .ReportCompletion, range: NSRange(location: 0, length: nsStr.length))
-        if let result = results.map({ nsStr.substringWithRange($0.range) }).first {
+        let results = urlDetector.matches(in: str, options: .reportCompletion, range: NSRange(location: 0, length: nsStr.length))
+        if let result = results.map({ nsStr.substring(with: $0.range) }).first {
             return result
         }
     }
     return nil
 }
 
-private func reduceRightToAllowed(str: String) -> String? {
-    if let regex = try? NSRegularExpression(pattern: "^[a-z0-9_]*", options: [.CaseInsensitive]) {
+private func reduceRightToAllowed(_ str: String) -> String? {
+    if let regex = try? NSRegularExpression(pattern: "^[a-z0-9_]*", options: [.caseInsensitive]) {
         let nsStr = str as NSString
-        let results = regex.matchesInString(str, options: [], range: NSRange(location: 0, length: nsStr.length))
-        if let result = results.map({ nsStr.substringWithRange($0.range) }).first {
+        let results = regex.matches(in: str, options: [], range: NSRange(location: 0, length: nsStr.length))
+        if let result = results.map({ nsStr.substring(with: $0.range) }).first {
             if !result.isEmpty {
                 return result
             }
@@ -71,23 +71,23 @@ private func reduceRightToAllowed(str: String) -> String? {
     return nil
 }
 
-func reduceToRegex(mutAttrString: NSMutableAttributedString, regex: NSRegularExpression, replaceHandler: ([String] -> String?)? = nil) -> [(range: NSRange, values: [String])]? {
+func reduceToRegex(_ mutAttrString: NSMutableAttributedString, regex: NSRegularExpression, replaceHandler: (([String]) -> String?)? = nil) -> [(range: NSRange, values: [String])]? {
     if mutAttrString.string.isEmpty {
         return nil
     }
     
     var elements = [(range: NSRange, values: [String])]()
     var location = 0
-    while let result = regex.firstMatchInString(mutAttrString.string, options: [], range: NSRange(location: location, length: mutAttrString.length - location)) {
+    while let result = regex.firstMatch(in: mutAttrString.string, options: [], range: NSRange(location: location, length: mutAttrString.length - location)) {
         var values = [String]()
         for i in 0..<result.numberOfRanges {
-            let value = (mutAttrString.string as NSString).substringWithRange(result.rangeAtIndex(i))
+            let value = (mutAttrString.string as NSString).substring(with: result.rangeAt(i))
             values.append(value)
         }
         
         let elementRange: NSRange
         if let content = replaceHandler?(values) {
-            mutAttrString.replaceCharactersInRange(result.range, withString: content)
+            mutAttrString.replaceCharacters(in: result.range, with: content)
             elementRange = NSRange(location: result.range.location, length: (content as NSString).length)
         } else {
             elementRange = result.range

@@ -13,10 +13,10 @@ extension ActiveElement: Equatable {}
 
 func ==(a: ActiveElement, b: ActiveElement) -> Bool {
     switch (a, b) {
-    case (.Mention(let a), .Mention(let b)) where a == b: return true
-    case (.Hashtag(let a), .Hashtag(let b)) where a == b: return true
-    case (.URL(let a), .URL(let b)) where a == b: return true
-    case (.None, .None): return true
+    case (.mention(let a), .mention(let b)) where a == b: return true
+    case (.hashtag(let a), .hashtag(let b)) where a == b: return true
+    case (.url(let a), .url(let b)) where a == b: return true
+    case (.none, .none): return true
     default: return false
     }
 }
@@ -34,37 +34,37 @@ class ActiveTypeTests: XCTestCase {
     }
     
     func testInvalid() {
-        XCTAssertEqual(activeElement(""), ActiveElement.None)
-        XCTAssertEqual(activeElement(" "), ActiveElement.None)
-        XCTAssertEqual(activeElement("x"), ActiveElement.None)
-        XCTAssertEqual(activeElement("ಠ_ಠ"), ActiveElement.None)
-        XCTAssertEqual(activeElement("😁"), ActiveElement.None)
+        XCTAssertEqual(activeElement(""), ActiveElement.none)
+        XCTAssertEqual(activeElement(" "), ActiveElement.none)
+        XCTAssertEqual(activeElement("x"), ActiveElement.none)
+        XCTAssertEqual(activeElement("ಠ_ಠ"), ActiveElement.none)
+        XCTAssertEqual(activeElement("😁"), ActiveElement.none)
     }
     
     func testMention() {
-        XCTAssertEqual(activeElement("@userhandle"), ActiveElement.Mention("userhandle"))
-        XCTAssertEqual(activeElement("@userhandle."), ActiveElement.Mention("userhandle"))
-        XCTAssertEqual(activeElement("@_with_underscores_"), ActiveElement.Mention("_with_underscores_"))
-        XCTAssertEqual(activeElement("@u"), ActiveElement.Mention("u"))
-        XCTAssertEqual(activeElement("@."), ActiveElement.None)
-        XCTAssertEqual(activeElement("@"), ActiveElement.None)
+        XCTAssertEqual(activeElement("@userhandle"), ActiveElement.mention("userhandle"))
+        XCTAssertEqual(activeElement("@userhandle."), ActiveElement.mention("userhandle"))
+        XCTAssertEqual(activeElement("@_with_underscores_"), ActiveElement.mention("_with_underscores_"))
+        XCTAssertEqual(activeElement("@u"), ActiveElement.mention("u"))
+        XCTAssertEqual(activeElement("@."), ActiveElement.none)
+        XCTAssertEqual(activeElement("@"), ActiveElement.none)
     }
     
     func testHashtag() {
-        XCTAssertEqual(activeElement("#somehashtag"), ActiveElement.Hashtag("somehashtag"))
-        XCTAssertEqual(activeElement("#somehashtag."), ActiveElement.Hashtag("somehashtag"))
-        XCTAssertEqual(activeElement("#_with_underscores_"), ActiveElement.Hashtag("_with_underscores_"))
-        XCTAssertEqual(activeElement("#h"), ActiveElement.Hashtag("h"))
-        XCTAssertEqual(activeElement("#."), ActiveElement.None)
-        XCTAssertEqual(activeElement("#"), ActiveElement.None)
+        XCTAssertEqual(activeElement("#somehashtag"), ActiveElement.hashtag("somehashtag"))
+        XCTAssertEqual(activeElement("#somehashtag."), ActiveElement.hashtag("somehashtag"))
+        XCTAssertEqual(activeElement("#_with_underscores_"), ActiveElement.hashtag("_with_underscores_"))
+        XCTAssertEqual(activeElement("#h"), ActiveElement.hashtag("h"))
+        XCTAssertEqual(activeElement("#."), ActiveElement.none)
+        XCTAssertEqual(activeElement("#"), ActiveElement.none)
     }
     
     func testURL() {
-        XCTAssertEqual(activeElement("http://www.google.com"), ActiveElement.URL("http://www.google.com"))
-        XCTAssertEqual(activeElement("https://www.google.com"), ActiveElement.URL("https://www.google.com"))
-        XCTAssertEqual(activeElement("https://www.google.com."), ActiveElement.URL("https://www.google.com"))
-        XCTAssertEqual(activeElement("www.google.com"), ActiveElement.URL("www.google.com"))
-        XCTAssertEqual(activeElement("google.com"), ActiveElement.URL("google.com"))
+        XCTAssertEqual(activeElement("http://www.google.com"), ActiveElement.url("http://www.google.com"))
+        XCTAssertEqual(activeElement("https://www.google.com"), ActiveElement.url("https://www.google.com"))
+        XCTAssertEqual(activeElement("https://www.google.com."), ActiveElement.url("https://www.google.com"))
+        XCTAssertEqual(activeElement("www.google.com"), ActiveElement.url("www.google.com"))
+        XCTAssertEqual(activeElement("google.com"), ActiveElement.url("google.com"))
     }
     
 }
