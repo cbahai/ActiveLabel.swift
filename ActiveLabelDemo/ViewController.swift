@@ -26,16 +26,16 @@ class ViewController: UIViewController {
         label.URLColor = UIColor(red: 85.0/255, green: 238.0/255, blue: 151.0/255, alpha: 1)
         label.regexColor = { _ in UIColor(red: 85.0/255, green: 172.0/255, blue: 238.0/255, alpha: 1) }
         label.regexAttributes = { _ in
-            return [NSFontAttributeName: UIFont.systemFontOfSize(40)]
+            return [NSAttributedStringKey.font.rawValue: UIFont.systemFont(ofSize: 40)]
         }
         
-        label.handleMentionTap { self.alert("Mention", message: $0) }
-        label.handleHashtagTap { self.alert("Hashtag", message: $0) }
-        label.handleURLTap { self.alert("URL", message: $0.description) }
-        label.regex = try! NSRegularExpression(pattern: "<([a-z0-9_]+)>([a-z0-9_]+)</\\1>", options: [.CaseInsensitive])
+        label.handleMentionTap { self.alert(title: "Mention", message: $0) }
+        label.handleHashtagTap { self.alert(title: "Hashtag", message: $0) }
+        label.handleURLTap { self.alert(title: "URL", message: $0.description) }
+        label.regex = try! NSRegularExpression(pattern: "<([a-z0-9_]+)>([a-z0-9_]+)</\\1>", options: [.caseInsensitive])
         label.handleRegexReplace { $0[2] }
         label.handleRegexTap {
-            self.alert("Regex", message: $0.joinWithSeparator(","))
+            self.alert(title: "Regex", message: $0.joined(separator: ","))
         }
         
         label.frame = CGRect(x: 20, y: 40, width: view.frame.width - 40, height: 300)
@@ -51,9 +51,9 @@ class ViewController: UIViewController {
     }
     
     func alert(title: String, message: String) {
-        let vc = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        vc.addAction(UIAlertAction(title: "Ok", style: .Cancel, handler: nil))
-        presentViewController(vc, animated: true, completion: nil)
+        let vc = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        vc.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        present(vc, animated: true, completion: nil)
     }
 
 }

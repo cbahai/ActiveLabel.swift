@@ -93,7 +93,7 @@ extension ActiveLabelDelegate {
             updateTextStorage()
         }
     }
-    @IBInspectable open var lineSpacing: Float? {
+    @IBInspectable open var lineSpacing: Float = 0 {
         didSet {
             updateTextStorage()
         }
@@ -277,19 +277,19 @@ extension ActiveLabelDelegate {
         var range = NSRange(location: 0, length: 0)
         var attributes = mutAttrString.attributes(at: 0, effectiveRange: &range)
         
-        attributes[NSFontAttributeName] = font!
-        attributes[NSForegroundColorAttributeName] = textColor
+        attributes[NSAttributedStringKey.font] = font!
+        attributes[NSAttributedStringKey.foregroundColor] = textColor
         mutAttrString.addAttributes(attributes, range: range)
         
-        attributes[NSForegroundColorAttributeName] = mentionColor
+        attributes[NSAttributedStringKey.foregroundColor] = mentionColor
         
         for (type, elements) in activeElements {
             
             var isRegex = false
             switch type {
-            case .mention: attributes[NSForegroundColorAttributeName] = mentionColor
-            case .hashtag: attributes[NSForegroundColorAttributeName] = hashtagColor
-            case .url: attributes[NSForegroundColorAttributeName] = URLColor
+            case .mention: attributes[NSAttributedStringKey.foregroundColor] = mentionColor
+            case .hashtag: attributes[NSAttributedStringKey.foregroundColor] = hashtagColor
+            case .url: attributes[NSAttributedStringKey.foregroundColor] = URLColor
             case .regex: isRegex = true
             case .none: ()
             }
@@ -297,10 +297,10 @@ extension ActiveLabelDelegate {
             for element in elements {
                 if isRegex {
                     if case .regex(let values) = element.element {
-                        attributes[NSForegroundColorAttributeName] = regexColor(values)
+                        attributes[NSAttributedStringKey.foregroundColor] = regexColor(values)
                         if let attrs = regexAttributes(values), !attrs.isEmpty {
                             for (k, v) in attrs {
-                                attributes[k] = v
+                                attributes[NSAttributedStringKey(k)] = v
                             }
                         }
                     }
@@ -355,13 +355,11 @@ extension ActiveLabelDelegate {
         var range = NSRange(location: 0, length: 0)
         var attributes = mutAttrString.attributes(at: 0, effectiveRange: &range)
         
-        let paragraphStyle = attributes[NSParagraphStyleAttributeName] as? NSMutableParagraphStyle ?? NSMutableParagraphStyle()
+        let paragraphStyle = attributes[NSAttributedStringKey.paragraphStyle] as? NSMutableParagraphStyle ?? NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = NSLineBreakMode.byWordWrapping
-        if let lineSpacing = lineSpacing {
-            paragraphStyle.lineSpacing = CGFloat(lineSpacing)
-        }
+        paragraphStyle.lineSpacing = CGFloat(lineSpacing)
         
-        attributes[NSParagraphStyleAttributeName] = paragraphStyle
+        attributes[NSAttributedStringKey.paragraphStyle] = paragraphStyle
         mutAttrString.setAttributes(attributes, range: range)
         
         return mutAttrString
@@ -375,28 +373,28 @@ extension ActiveLabelDelegate {
         var attributes = textStorage.attributes(at: 0, effectiveRange: nil)
         if isSelected {
             switch selectedElement.element {
-            case .mention(_): attributes[NSForegroundColorAttributeName] = mentionColor
-            case .hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagColor
-            case .url(_): attributes[NSForegroundColorAttributeName] = URLColor
+            case .mention(_): attributes[NSAttributedStringKey.foregroundColor] = mentionColor
+            case .hashtag(_): attributes[NSAttributedStringKey.foregroundColor] = hashtagColor
+            case .url(_): attributes[NSAttributedStringKey.foregroundColor] = URLColor
             case .regex(let values):
-                attributes[NSForegroundColorAttributeName] = regexColor(values)
+                attributes[NSAttributedStringKey.foregroundColor] = regexColor(values)
                 if let attrs = regexAttributes(values), !attrs.isEmpty {
                     for (k, v) in attrs {
-                        attributes[k] = v
+                        attributes[NSAttributedStringKey(k)] = v
                     }
                 }
             case .none: ()
             }
         } else {
             switch selectedElement.element {
-            case .mention(_): attributes[NSForegroundColorAttributeName] = mentionSelectedColor ?? mentionColor
-            case .hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagSelectedColor ?? hashtagColor
-            case .url(_): attributes[NSForegroundColorAttributeName] = URLSelectedColor ?? URLColor
+            case .mention(_): attributes[NSAttributedStringKey.foregroundColor] = mentionSelectedColor ?? mentionColor
+            case .hashtag(_): attributes[NSAttributedStringKey.foregroundColor] = hashtagSelectedColor ?? hashtagColor
+            case .url(_): attributes[NSAttributedStringKey.foregroundColor] = URLSelectedColor ?? URLColor
             case .regex(let values):
-                attributes[NSForegroundColorAttributeName] = regexSelectedColor?(values) ?? regexColor(values)
+                attributes[NSAttributedStringKey.foregroundColor] = regexSelectedColor?(values) ?? regexColor(values)
                 if let attrs = regexAttributes(values), !attrs.isEmpty {
                     for (k, v) in attrs {
-                        attributes[k] = v
+                        attributes[NSAttributedStringKey(k)] = v
                     }
                 }
             case .none: ()

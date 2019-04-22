@@ -81,7 +81,7 @@ func reduceToRegex(_ mutAttrString: NSMutableAttributedString, regex: NSRegularE
     while let result = regex.firstMatch(in: mutAttrString.string, options: [], range: NSRange(location: location, length: mutAttrString.length - location)) {
         var values = [String]()
         for i in 0..<result.numberOfRanges {
-            let value = (mutAttrString.string as NSString).substring(with: result.rangeAt(i))
+            let value = (mutAttrString.string as NSString).substring(with: result.range(at: i))
             values.append(value)
         }
         
